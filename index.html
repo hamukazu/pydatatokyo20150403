@@ -25,7 +25,8 @@
       var slideshow = remark.create({sourceUrl: q ? q : "CONTENT.md"});
       MathJax.Hub.Config({
           tex2jax: {
-          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+              skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+              inlineMath: [['$','$'], ['\\(','\\)']]
           }
       });
       MathJax.Hub.Queue(function() {
