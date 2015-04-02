@@ -3,7 +3,11 @@ class:center,middle
 # Introduction to NumPy
 # for Machine Learning Programmers
 
-Kimikazu Kato
+## PyData Tokyo Meetup
+## April 3, 2015 @ 
+
+### Kimikazu Kato
+### Silver Egg Techonogy
 
 ---
 # Target Audience
@@ -20,7 +24,7 @@ Kimikazu Kato
 
 ---
 ---
-## But Python is Very Slow!
+## Python is Very Slow!
 Code in C
 ```C
 #include <stdio.h>
@@ -131,10 +135,28 @@ array([100,   1, 200,   3, 300,   5, 400,   7, 500,   9])
 ```
 
 ---
-## Refernces
+## Boolean Indexing
 
-* Gabriele Lanaro, "Python High Performance Programming," Packt Publishing, 2013.
-* Stéfan van der Walt, [Numpy Medkit](http://mentat.za.net/numpy/numpy_advanced_slides/)
+```python
+>>> a=np.array([1,2,3])
+>>> b=np.array([False,True,True])
+>>> a[b]
+array([2, 3])
+>>> c=np.arange(-3,4)
+>>> c
+array([-3, -2, -1,  0,  1,  2,  3])
+>>> d = c>0
+>>> d
+array([False, False, False, False,  True,  True,  True], dtype=bool)
+>>> c[d]
+array([1, 2, 3])
+>>> c[c>0]
+array([1, 2, 3])
+>>> c[np.logical_and(c>=0,c%2==0)]
+array([0, 2])
+>>> c[np.logical_or(c>=0,c%2==0)]
+array([-2,  0,  1,  2,  3])
+```
 
 ---
 # Case Study 1: Ridge Regression
@@ -158,7 +180,7 @@ The corresponding part of the code:
                 coef = safe_sparse_dot(X.T, dual_coef, dense_output=True).T
             except linalg.LinAlgError:
 ```
-([sklearn/linear_model/ridge.py](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/linear_model/ridge.py) L338)
+([sklearn.h/linear_model/ridge.py L338-343](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/linear_model/ridge.py#L338-343))
 
 ---
 `$$ w = (X^T X + \alpha)^{-1} X^T y $$`
@@ -170,24 +192,85 @@ The corresponding part of the code:
                 coef = safe_sparse_dot(X.T, dual_coef, dense_output=True).T
             except linalg.LinAlgError:
 ```
+([sklearn.h/linear_model/ridge.py L338-343](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/linear_model/ridge.py#L338-343))
 
 * `safe_sparse_dot` is a wrapper function of `dot` which can be applied to sparse and dense matrices.
-* `_solve_cholesky_kernel` computes $(K+ \alpha I)^{-1}y$
+* `_solve_cholesky_kernel` computes `$(K+ \alpha I)^{-1}y$`
 
 ---
-# Inside `_solve_cholesky_kernel`
+## Inside `_solve_cholesky_kernel`
 
+`$$(K+ \alpha I)^{-1}y$$`
+```python
+        K.flat[::n_samples + 1] += alpha[0]
 
+        try:
+            dual_coef = linalg.solve(K, y, sym_pos=True,
+                                     overwrite_a=False)
+        except np.linalg.LinAlgError:
+```
+([sklearn.h/linear_model/ridge.py L138-146](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/linear_model/ridge.py#L138-146), comments omitted)
+
+* `inv` should not be used; `solve` is faster (general knowledge in numerical computation)
+* `flat` ???
+
+---
+## `flat`
+
+```
+class flatiter(builtins.object)
+ |  Flat iterator object to iterate over arrays.
+ |  
+ |  A `flatiter` iterator is returned by ``x.flat`` for any array `x`.
+ |  It allows iterating over the array as if it were a 1-D array,
+ |  either in a for-loop or by calling its `next` method.
+ |  
+ |  Iteration is done in C-contiguous style, with the last index varying the
+ |  fastest. The iterator can also be indexed using basic slicing or
+ |  advanced indexing.
+ |  
+ |  See Also
+ |  --------
+ |  ndarray.flat : Return a flat iterator over an array.
+ |  ndarray.flatten : Returns a flattened copy of an array.
+ |  
+ |  Notes
+ |  -----
+ |  A `flatiter` iterator can not be constructed directly from Python code
+ |  by calling the `flatiter` constructor.
+ ```
+
+In short, `x.flat` is a reference to the elements of the array `x`, and can be used like a one dimensional array.
+
+---
+```python
+        K.flat[::n_samples + 1] += alpha[0]
+
+        try:
+            dual_coef = linalg.solve(K, y, sym_pos=True,
+                                     overwrite_a=False)
+        except np.linalg.LinAlgError:
+```
+([sklearn.h/linear_model/ridge.py L138-146](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/linear_model/ridge.py#L138-146), comments omitted)
+
+```python
+        K.flat[::n_samples + 1] += alpha[0]
+```
+is equivalent to
+```python
+        K.flat += alpha[0] * np.eyes(K.shape[0])
+```
+
+The upper is inplace.
 
 ---
 # Case Study 2: NMF
 
-`sklearn.decomposition.nmf`
+(`sklearn.decomposition.nmf`)
 
 NMF = Non-negative Matrix Factorization
 
 Successful in face part detection
-
 
 ---
 # Idea of NMF
@@ -217,8 +300,8 @@ Convergence condition:
 where
 `$$ \nabla^P f(\Theta) =\left\{
 \begin{array}{ll}
-\nabla^P f(\Theta)_i & \text{if } \theta_i>0 \\
-\max \left( 0, \nabla^P f(\Theta)_i \right) & \text{if } \theta_i=0
+\nabla f(\Theta)_i & \text{if } \theta_i>0 \\
+\min \left( 0, \nabla f(\Theta)_i \right) & \text{if } \theta_i=0
 \end{array}
 \right.
 $$`
@@ -229,8 +312,8 @@ $$`
 Computation of
 `$$ \nabla^P f(\Theta) =\left\{
 \begin{array}{ll}
-\nabla^P f(\Theta)_i & \text{if } \theta_i>0 \\
-\max \left( 0, \nabla^P f(\Theta)_i \right) & \text{if } \theta_i=0
+\nabla f(\Theta)_i & \text{if } \theta_i>0 \\
+\min \left( 0, \nabla f(\Theta)_i \right) & \text{if } \theta_i=0
 \end{array}
 \right.
 $$`
@@ -242,9 +325,55 @@ Code:
 ```
 ([sklearn/decomposition/nmf.py](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py) L500)
 
-`norm` : utility function of scikit-learn which computes L2-norm
+* `norm` : utility function of scikit-learn which computes L2-norm
+* `np.r_` : concatination of arrays
 
 ---
-References
+`$$ \nabla^P f(\Theta) =\left\{
+\begin{array}{ll}
+\nabla f(\Theta)_i & \text{if } \theta_i>0 \\
+\min \left( 0, \nabla f(\Theta)_i \right) & \text{if } \theta_i=0
+\end{array}
+\right.
+$$`
 
+means
+
+`$$ \nabla^P f(\Theta) =\left\{
+\begin{array}{ll}
+\nabla f(\Theta)_i & \text{if } \theta_i>0 \\
+\nabla f(\Theta)_i & \text{if } \theta_i=0 \text{ and } \nabla f(\Theta)_i<0\\
+0 & \text{otherwise}
+\end{array}
+\right.
+$$`
+
+Code:
+```python
+            proj_norm = norm(np.r_[gradW[np.logical_or(gradW < 0, W > 0)],
+                                   gradH[np.logical_or(gradH < 0, H > 0)]])
+```
+([sklearn/decomposition/nmf.py](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py) L500)
+
+```python
+    gradW[np.logical_or(gradW < 0, W > 0)],
+```
+means that an element is employed if `$\nabla f(\Theta)_i<0$` or `$\theta_i>0$`, and discarded otherwise.
+
+Only non-zero elements remains after indexing.
+
+Effective for computation of `norm`!
+
+---
+# References
+
+### Official
+* [scikit-learn](http://scikit-learn.org/stable/)
+
+### For beginners of NumPy/SciPy
+* Gabriele Lanaro, "Python High Performance Programming," Packt Publishing, 2013.
+* Stéfan van der Walt, [Numpy Medkit](http://mentat.za.net/numpy/numpy_advanced_slides/)
+* [Python Scientific Lecture Notes](https://scipy-lectures.github.io/index.html)
+
+### Algorithm of NMF
 * C.-J. Lin. Projected gradient methods for non-negative matrix factorization. Neural Computation 19, 2007.
