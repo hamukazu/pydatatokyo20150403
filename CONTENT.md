@@ -32,9 +32,8 @@ People who want to implement machine learning algorithms in Python.
 * Chief Scientist at Silver Egg Technology
 * Algorithm designer for a recommendation system
 
-
 ---
-## Python is Very Slow!
+# Python is Very Slow!
 Code in C
 ```C
 #include <stdio.h>
