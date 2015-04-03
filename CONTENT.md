@@ -298,10 +298,13 @@ In short, `x.flat` is a reference to the elements of the array `x`, and can be u
 ```
 is equivalent to
 ```python
-        K.flat += alpha[0] * np.eyes(K.shape[0])
+        K.flat += alpha[0] * np.eyes(n_samples)
 ```
+(The size of `$K$` is `n_samples` `$\times$` `n_samples`)
 
-The upper is inplace.
+The upper is an inplace version.
+
+![](flat.png)
 
 ---
 # Case Study 2: NMF
