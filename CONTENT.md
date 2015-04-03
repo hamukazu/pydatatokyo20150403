@@ -4,13 +4,15 @@ class:center,middle
 # for Machine Learning Programmers
 
 ## PyData Tokyo Meetup
-## April 3, 2015 @ 
+## April 3, 2015 @ Denso IT Laboratory
 
 ### Kimikazu Kato
 ### Silver Egg Techonogy
 
 ---
 # Target Audience
+
+People who want to implement machine learning algorithms in Python.
 
 ---
 # Outline
@@ -23,6 +25,14 @@ class:center,middle
 * Conclusion
 
 ---
+# Who am I?
+
+### Kimikazu Kato
+
+* Chief Scientist at Silver Egg Technology
+* Algorithm designer for a recommendation system
+
+
 ---
 ## Python is Very Slow!
 Code in C
@@ -159,13 +169,44 @@ array([-2,  0,  1,  2,  3])
 ```
 
 ---
+# Cf. In Pandas
+
+```python
+>>> import pandas as pd
+>>> import numpy as np
+>>> df=pd.DataFrame(np.random.randn(5,3),columns=["A","B","C"])
+>>> df
+          A         B         C
+0  1.084117 -0.626930 -1.818375
+1  1.717066  2.554761 -0.560069
+2 -1.355434 -0.464632  0.322603
+3  0.013824  0.298082 -1.405409
+4  0.743068  0.292042 -1.002901
+
+[5 rows x 3 columns]
+>>> df[df.A>0.5]
+          A         B         C
+0  1.084117 -0.626930 -1.818375
+1  1.717066  2.554761 -0.560069
+4  0.743068  0.292042 -1.002901
+
+[3 rows x 3 columns]
+>>> df[(df.A>0.5) & (df.B>0)]
+          A         B         C
+1  1.717066  2.554761 -0.560069
+4  0.743068  0.292042 -1.002901
+
+[2 rows x 3 columns]
+```
+
+---
 # Case Study 1: Ridge Regression
 (`sklearn.linear_model.Ridge`)
 
 `$$ \min_w \Vert y - Xw \Vert_2^2 + \alpha \Vert w \Vert_2^2 $$`
 
 * `$X$`, `$y$`: input, output of training data
-* `$alpha$` : hyper parameter
+* `$\alpha$` : hyper parameter
 
 The optimum is given as:
 `$$ w = (X^T X + \alpha I)^{-1} X^T y $$`
@@ -323,10 +364,10 @@ Code:
             proj_norm = norm(np.r_[gradW[np.logical_or(gradW < 0, W > 0)],
                                    gradH[np.logical_or(gradH < 0, H > 0)]])
 ```
-([sklearn/decomposition/nmf.py](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py) L500)
+([sklearn/decomposition/nmf.py L500-501](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py#L500-501))
 
 * `norm` : utility function of scikit-learn which computes L2-norm
-* `np.r_` : concatination of arrays
+* `np.r_` : concatenation of arrays
 
 ---
 `$$ \nabla^P f(\Theta) =\left\{
@@ -353,7 +394,7 @@ Code:
             proj_norm = norm(np.r_[gradW[np.logical_or(gradW < 0, W > 0)],
                                    gradH[np.logical_or(gradH < 0, H > 0)]])
 ```
-([sklearn/decomposition/nmf.py](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py) L500)
+([sklearn/decomposition/nmf.py L500-501](https://github.com/scikit-learn/scikit-learn/blob/0.16.X/sklearn/decomposition/nmf.py#L500-501))
 
 ```python
     gradW[np.logical_or(gradW < 0, W > 0)],
@@ -362,10 +403,15 @@ means that an element is employed if `$\nabla f(\Theta)_i<0$` or `$\theta_i>0$`,
 
 Only non-zero elements remains after indexing.
 
-Effective for computation of `norm`!
+---
+# Conclusion
+
+* Avoid for-sentence; use NumPy/SciPy's capabilities
+* Mathematical derivation is important
+* You can learn a lot for the source code of scikit-learn 
 
 ---
-# References
+## References
 
 ### Official
 * [scikit-learn](http://scikit-learn.org/stable/)
