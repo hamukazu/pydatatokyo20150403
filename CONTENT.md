@@ -358,7 +358,7 @@ $$`
 
 ---
 
-Computation of
+Computation of `$ \left\Vert \nabla^P f(\Theta)\right\vert $` where
 `$$ \nabla^P f(\Theta) =\left\{
 \begin{array}{ll}
 \nabla f(\Theta)_i & \text{if } \theta_i>0 \\
