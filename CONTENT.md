@@ -31,6 +31,7 @@ People who want to implement machine learning algorithms in Python.
 
 * Chief Scientist at Silver Egg Technology
 * Algorithm designer for a recommendation system
+* Ph.D in computer science (Master's degree in math)
 
 ---
 # Python is Very Slow!
@@ -99,8 +100,12 @@ Still slower than C, but sufficiently fast as a script language.
 >>> a=np.array([0,1,2,3])
 >>> a*3
 array([0, 3, 6, 9])
+>>> np.exp(a)
+array([  1.        ,   2.71828183,   7.3890561 ,  20.08553692])
 ```
 ![](bc.png)
+
+`exp` is called a universal function.
 ---
 ## Broadcasting (2D)
 
@@ -298,7 +303,7 @@ In short, `x.flat` is a reference to the elements of the array `x`, and can be u
 ```
 is equivalent to
 ```python
-        K.flat += alpha[0] * np.eyes(n_samples)
+        K += alpha[0] * np.eyes(n_samples)
 ```
 (The size of `$K$` is `n_samples` `$\times$` `n_samples`)
 
@@ -319,7 +324,7 @@ Successful in face part detection
 # Idea of NMF
 
 Approximate the input matrix as a product of two smaller non-negative matrix:
-`$$ X \approx WH $$`
+`$$ X \approx W^T H $$`
 `$$ W_{ij}\geq 0,\  H_{ij}\geq 0$$`
 
 ### Notation
@@ -327,7 +332,7 @@ Approximate the input matrix as a product of two smaller non-negative matrix:
 Parameter set:
 `$$ \Theta = (W,H), \quad \theta_i \text{ : } i \text{-th element of } \Theta $$`
 Error function:
-`$$ f(\Theta) = \Vert X - WH \Vert_F^2$$`
+`$$ f(\Theta) = \Vert X - W^T H \Vert_F^2$$`
 
 ---
 # Algorithm of NMF
@@ -339,7 +344,8 @@ where
 `$$ P[x]_i = \max (0,x_i) $$`
 
 Convergence condition:
-`$$ \nabla^P f(\Theta^{(k)}) \leq \epsilon \nabla^P f(\Theta^{(1)}) $$`
+`$$ \left\Vert \nabla^P f(\Theta^{(k)})\right\Vert 
+\leq \epsilon \left\Vert \nabla^P f(\Theta^{(1)}) \right\Vert$$`
 where
 `$$ \nabla^P f(\Theta) =\left\{
 \begin{array}{ll}
@@ -352,7 +358,7 @@ $$`
 
 ---
 
-Computation of
+Computation of `$ \left\Vert \nabla^P f(\Theta)\right\vert $` where
 `$$ \nabla^P f(\Theta) =\left\{
 \begin{array}{ll}
 \nabla f(\Theta)_i & \text{if } \theta_i>0 \\
@@ -410,7 +416,7 @@ Only non-zero elements remains after indexing.
 
 * Avoid for-sentence; use NumPy/SciPy's capabilities
 * Mathematical derivation is important
-* You can learn a lot for the source code of scikit-learn 
+* You can learn a lot from the source code of scikit-learn 
 
 ---
 ## References
